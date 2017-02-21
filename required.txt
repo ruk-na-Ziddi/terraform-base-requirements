@@ -1,0 +1,5 @@
+access_key and secret_key
+vpc id
+subnet ids(at least 2 public + 2 provate subnets)
+availibility zones(at lease 2)
+region is us-east-1 then need one ami-id
