@@ -122,3 +122,61 @@ resource "aws_security_group" "webserver_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+#---------------------Vpc configuration-----------
+resource "aws_vpc" "demo_vpc" {
+    cidr_block = "10.0.0.0/4"
+    instance_tenancy = "dedicated"
+    enable_dns_support = true
+    enable_dns_hostnames = true
+
+    tags {
+        Name = "demo-vpc"
+    }
+}
+
+#-----------------------Creating subnets-----------
+
+resource "aws_subnet" "pri_sub_1" {
+    vpc_id = "${aws_vpc.demo_vpc.id}"
+    cidr_block = "10.0.1.0/24"
+    availability_zone = 
+    map_public_ip_on_launch = false
+
+    tags {
+        Name = "pri-subnet-1"
+    }
+}
+
+resource "aws_subnet" "pri_sub_2" {
+    vpc_id = "${aws_vpc.demo_vpc.id}"
+    cidr_block = "10.0.1.0/24"
+    availability_zone =
+    map_public_ip_on_launch = false
+
+    tags {
+        Name = "pri-subnet-2"
+    }
+}
+
+resource "aws_subnet" "pub_sub_1" {
+    vpc_id = "${aws_vpc.demo_vpc.id}"
+    cidr_block = "10.0.1.0/24"
+    availability_zone = 
+    map_public_ip_on_launch = true
+
+    tags {
+        Name = "pub-subnet-1"
+    }
+}
+
+resource "aws_subnet" "pub_sub_2" {
+    vpc_id = "${aws_vpc.demo_vpc.id}"
+    cidr_block = "10.0.1.0/24"
+    availability_zone = 
+    map_public_ip_on_launch = true
+
+    tags {
+        Name = "pub-subnet-2"
+    }
+}
