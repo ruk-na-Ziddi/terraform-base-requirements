@@ -3,7 +3,7 @@ variable "region" {
 }
 
 variable "ami" {
-	default = "ami-2423d532"
+	default = "ami-6d1c2007"
 }
 
 variable "instance" {
@@ -21,8 +21,8 @@ variable "availability_zone_2" {
 variable "server_elb" {
 	type = "map"
 	default = {
-		app_instance_port = 80
-		app_lb_port = 8009
+		app_instance_port = 8009
+		app_lb_port = 80
 		healthy_threshold = 2
 		unhealthy_threshold = 2 
 		timeout = 3

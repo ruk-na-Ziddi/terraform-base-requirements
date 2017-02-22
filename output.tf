@@ -9,3 +9,7 @@ output "webservice_ip" {
 output "elb_url" {
 	value = "${aws_elb.server_elb.dns_name}"
 }
+
+output "service_elb_url" {
+	value = "${aws_elb.service_elb.dns_name}"
+}
