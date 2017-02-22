@@ -7,5 +7,5 @@ output "webservice_ip" {
 }
 
 output "elb_url" {
-	value = "${aws_elb.elb.dns_name}"
+	value = "${aws_elb.server_elb.dns_name}"
 }

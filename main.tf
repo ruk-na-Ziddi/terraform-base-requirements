@@ -12,20 +12,21 @@ resource "aws_key_pair" "ssh_key" {
 #--------------aws ec2 instance configuration---------
 resource "aws_instance" "webservice" {
   ami                    = "${var.ami}"
-  instance_type          = #"AMI_ID_HERE"
+  instance_type          = "${var.instance}"
   tags {
-    Name                 = "webservice"
+    Name                 = "webservice-${count.index + 1}"
     FunctionalContext    = "demo"
   }
   key_name               = "${aws_key_pair.ssh_key.key_name}"
   availability_zone      = "${var.availability_zone_1}"
+  count                  = 2
   vpc_security_group_ids = ["${aws_security_group.webservice_sg.id}"]
-  subnet_id              = "${var.private_subnet_zone_1}"
+  subnet_id              = "${aws_subnet.pri_sub_1.id}"
 }
 
 resource "aws_instance" "webserver" {
   ami                    = "${var.ami}"
-  instance_type          = #"AMI_ID_HERE"
+  instance_type          = "${var.instance}"
   tags {
     Name                 = "webserver"
     FunctionalContext    = "demo"
@@ -33,35 +34,55 @@ resource "aws_instance" "webserver" {
   key_name               = "${aws_key_pair.ssh_key.key_name}"
   availability_zone      = "${var.availability_zone_1}"
   vpc_security_group_ids = ["${aws_security_group.webserver_sg.id}"]
-  subnet_id              = "${var.private_subnet_zone_1}"
+  subnet_id              = "${aws_subnet.pri_sub_1.id}"
 }
 
 #--------------elastic load balancer configuration------
-resource "aws_elb" "elb" {
-  name                  = "elb"
-  subnets               = ["${var.public_subnet_zone_1}", "${var.public_subnet_zone_2}"]
+resource "aws_elb" "server_elb" {
+  name                  = "server-elb"
+  subnets               = ["${aws_subnet.pub_sub_1.id}", "${aws_subnet.pub_sub_2.id}"]
   security_groups       = ["${aws_security_group.elb_sg.id}"]
   listener {
-    instance_port       = "${var.elb["app_instance_port"]}"
+    instance_port       = "${var.server_elb["app_instance_port"]}"
     instance_protocol   = "http"
-    lb_port             = "${var.elb["app_lb_port"]}"
+    lb_port             = "${var.server_elb["app_lb_port"]}"
     lb_protocol         = "http"
   }
   health_check {
-    healthy_threshold   = "${var.elb["healthy_threshold"]}"
-    unhealthy_threshold = "${var.elb["unhealthy_threshold"]}"
-    timeout             = "${var.elb["timeout"]}"
-    target              = "${var.elb["target"]}"
-    interval            = "${var.elb["interval"]}"
+    healthy_threshold   = "${var.server_elb["healthy_threshold"]}"
+    unhealthy_threshold = "${var.server_elb["unhealthy_threshold"]}"
+    timeout             = "${var.server_elb["timeout"]}"
+    target              = "${var.server_elb["target"]}"
+    interval            = "${var.server_elb["interval"]}"
   }
   instances             = ["${aws_instance.webserver.id}"]
+}
+
+resource "aws_elb" "service_elb" {
+  name                  = "service-elb"
+  subnets               = ["${aws_subnet.pub_sub_1.id}", "${aws_subnet.pub_sub_2.id}"]
+  security_groups       = ["${aws_security_group.elb_sg.id}"]
+  listener {
+    instance_port       = "${var.service_elb["app_instance_port"]}"
+    instance_protocol   = "http"
+    lb_port             = "${var.service_elb["app_lb_port"]}"
+    lb_protocol         = "http"
+  }
+  health_check {
+    healthy_threshold   = "${var.service_elb["healthy_threshold"]}"
+    unhealthy_threshold = "${var.service_elb["unhealthy_threshold"]}"
+    timeout             = "${var.service_elb["timeout"]}"
+    target              = "${var.service_elb["target"]}"
+    interval            = "${var.service_elb["interval"]}"
+  }
+  instances             = ["${aws_instance.webservice-*.id}"]
 }
 
 
 #---------------Security group configuration---------------
 resource "aws_security_group" "elb_sg" {
   name        = "elb-sg"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = "${aws_vpc.demo_vpc.id}"
   description = "Used for terraform demo"
   ingress {
     from_port   = 80
@@ -79,7 +100,7 @@ resource "aws_security_group" "elb_sg" {
 
 resource "aws_security_group" "webservice_sg" {
   name   = "webservice-sg"
-  vpc_id = "${var.vpc_id}"
+  vpc_id = "${aws_vpc.demo_vpc.id}"
   ingress {
     from_port   = 7000
     to_port     = 9000
@@ -102,7 +123,7 @@ resource "aws_security_group" "webservice_sg" {
 
 resource "aws_security_group" "webserver_sg" {
   name   = "webserver-sg"
-  vpc_id = "${var.vpc_id}"
+  vpc_id = "${aws_vpc.demo_vpc.id}"
   ingress {
     from_port   = 8000
     to_port     = 9000
