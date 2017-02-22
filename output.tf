@@ -3,7 +3,7 @@ output "webserver_ip" {
 }
 
 output "webservice_ip" {
-	value = "${aws_instance.webservice.private_ip}"
+	value = ["${aws_instance.webservice.*.private_ip}"]
 }
 
 output "elb_url" {

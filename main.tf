@@ -16,6 +16,7 @@ resource "aws_instance" "webservice" {
   tags {
     Name                 = "webservice-${count.index + 1}"
     FunctionalContext    = "demo"
+    Purpose              = "webservice"
   }
   key_name               = "${aws_key_pair.ssh_key.key_name}"
   availability_zone      = "${var.availability_zone_1}"
@@ -75,7 +76,7 @@ resource "aws_elb" "service_elb" {
     target              = "${var.service_elb["target"]}"
     interval            = "${var.service_elb["interval"]}"
   }
-  instances             = ["${aws_instance.webservice-*.id}"]
+  instances             = ["${aws_instance.webservice.*.id}"]
 }
 
 
@@ -146,7 +147,7 @@ resource "aws_security_group" "webserver_sg" {
 
 #---------------------Vpc configuration-----------
 resource "aws_vpc" "demo_vpc" {
-    cidr_block = "10.0.0.0/4"
+    cidr_block = "0.0.0.0/4"
     instance_tenancy = "dedicated"
     enable_dns_support = true
     enable_dns_hostnames = true
@@ -161,7 +162,7 @@ resource "aws_vpc" "demo_vpc" {
 resource "aws_subnet" "pri_sub_1" {
     vpc_id = "${aws_vpc.demo_vpc.id}"
     cidr_block = "10.0.1.0/24"
-    availability_zone = 
+    availability_zone = "${var.availability_zone_1}" 
     map_public_ip_on_launch = false
 
     tags {
@@ -172,7 +173,7 @@ resource "aws_subnet" "pri_sub_1" {
 resource "aws_subnet" "pri_sub_2" {
     vpc_id = "${aws_vpc.demo_vpc.id}"
     cidr_block = "10.0.1.0/24"
-    availability_zone =
+    availability_zone = "${var.availability_zone_1}"
     map_public_ip_on_launch = false
 
     tags {
@@ -183,7 +184,7 @@ resource "aws_subnet" "pri_sub_2" {
 resource "aws_subnet" "pub_sub_1" {
     vpc_id = "${aws_vpc.demo_vpc.id}"
     cidr_block = "10.0.1.0/24"
-    availability_zone = 
+    availability_zone = "${var.availability_zone_1}" 
     map_public_ip_on_launch = true
 
     tags {
@@ -194,7 +195,7 @@ resource "aws_subnet" "pub_sub_1" {
 resource "aws_subnet" "pub_sub_2" {
     vpc_id = "${aws_vpc.demo_vpc.id}"
     cidr_block = "10.0.1.0/24"
-    availability_zone = 
+    availability_zone = "${var.availability_zone_1}" 
     map_public_ip_on_launch = true
 
     tags {
